@@ -112,12 +112,9 @@
                 });
             };
 
-            const handleProjects = () => {
-                setActiveAlert({
-                    title: "My Projects",
-                    content: "1. This Landing Page\n2. Tip Calculator (coming soon!)\n3. Todo App (coming soon!)"
-                });
-            };
+           const handleProjects = () => {
+    window.location.href = 'tip-calculator.html';
+};
 
             return (
                 <div className="min-h-screen flex items-center justify-center p-5 overflow-hidden relative font-sans">
