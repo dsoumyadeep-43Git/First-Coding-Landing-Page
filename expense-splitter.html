@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SplitEasy - Expense Splitter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .card h2 {
+      color: #374151;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      color: #374151;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      background: #f9fafb;
+      color: #111827;
+      font-weight: 500;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1em;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 8px 16px;
+      font-size: 0.85em;
+      width: auto;
+    }
+
+    .people-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .person-tag {
+      background: #e0e7ff;
+      color: #4338ca;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .person-tag button {
+      background: #4338ca;
+      color: white;
+      border: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.8em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .expense-item {
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border-left: 4px solid #667eea;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .expense-details h4 {
+      color: #111827;
+      margin-bottom: 4px;
+    }
+
+    .expense-details p {
+      color: #6b7280;
+      font-size: 0.9em;
+    }
+
+    .expense-amount {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .settlement-item {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      border: 2px solid #6ee7b7;
+      text-align: center;
+    }
+
+    .settlement-item p {
+      font-size: 1.1em;
+      color: #065f46;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+
+    .settlement-amount {
+      font-size: 1.5em;
+      font-weight: 800;
+      color: #059669;
+      margin: 8px 0;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #9ca3af;
+      padding: 40px 20px;
+      font-size: 1.1em;
+    }
+
+    .total-section {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid #fbbf24;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .total-section h3 {
+      color: #92400e;
+      margin-bottom: 10px;
+    }
+
+    .total-amount {
+      font-size: 2em;
+      font-weight: 800;
+      color: #b45309;
+    }
+
+    .back-btn {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .back-btn:hover {
+      background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💰 SplitEasy</h1>
+      <p>Split expenses fairly among friends</p>
+    </div>
+
+    <div class="main-grid">
+      <!-- Left Column: Add People & Expenses -->
+      <div>
+        <div class="card">
+          <h2>👥 Add People</h2>
+          <div class="input-group">
+            <label for="personName">Person's Name</label>
+            <input 
+              type="text" 
+              id="personName" 
+              placeholder="Enter name"
+            >
+          </div>
+          <button class="btn btn-primary" onclick="addPerson()">Add Person</button>
+          
+          <div class="people-list" id="peopleList"></div>
+        </div>
+
+        <div class="card" style="margin-top: 25px;">
+          <h2>💵 Add Expense</h2>
+          <div class="input-group">
+            <label for="expenseDesc">Description</label>
+            <input 
+              type="text" 
+              id="expenseDesc" 
+              placeholder="E.g., Dinner at restaurant"
+            >
+          </div>
+          <div class="input-group">
+            <label for="expenseAmount">Amount (₹)</label>
+            <input 
+              type="number" 
+              id="expenseAmount" 
+              placeholder="0.00"
+              step="0.01"
+            >
+          </div>
+          <div class="input-group">
+            <label for="paidBy">Paid By</label>
+            <select id="paidBy">
+              <option value="">Select person</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="addExpense()">Add Expense</button>
+        </div>
+      </div>
+
+      <!-- Right Column: Expenses & Settlement -->
+      <div>
+        <div class="card">
+          <h2>📝 Expenses</h2>
+          <div id="expensesList"></div>
+          <div class="total-section" id="totalSection" style="display: none;">
+            <h3>Total Expenses</h3>
+            <div class="total-amount" id="totalAmount">₹0.00</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 25px;">
+          <h2>💸 Who Owes Whom</h2>
+          <div id="settlementList"></div>
+        </div>
+      </div>
+    </div>
+
+    <a href="index.html" class="back-btn">← Back to Portfolio</a>
+  </div>
+
+  <script>
+    let people = [];
+    let expenses = [];
+
+    function addPerson() {
+      const nameInput = document.getElementById('personName');
+      const name = nameInput.value.trim();
+      
+      if (name === '') {
+        alert('Please enter a name');
+        return;
+      }
+      
+      if (people.includes(name)) {
+        alert('This person is already added');
+        return;
+      }
+      
+      people.push(name);
+      nameInput.value = '';
+      updatePeopleList();
+      updatePaidByDropdown();
+      calculateSettlement();
+    }
+
+    function removePerson(name) {
+      people = people.filter(p => p !== name);
+      expenses = expenses.filter(e => e.paidBy !== name);
+      updatePeopleList();
+      updatePaidByDropdown();
+      updateExpensesList();
+      calculateSettlement();
+    }
+
+    function updatePeopleList() {
+      const list = document.getElementById('peopleList');
+      
+      if (people.length === 0) {
+        list.innerHTML = '<p class="empty-state">No people added yet</p>';
+        return;
+      }
+      
+      list.innerHTML = people.map(person => `
+        <div class="person-tag">
+          ${person}
+          <button onclick="removePerson('${person}')">×</button>
+        </div>
+      `).join('');
+    }
+
+    function updatePaidByDropdown() {
+      const select = document.getElementById('paidBy');
+      select.innerHTML = '<option value="">Select person</option>' +
+        people.map(person => `<option value="${person}">${person}</option>`).join('');
+    }
+
+    function addExpense() {
+      const desc = document.getElementById('expenseDesc').value.trim();
+      const amount = parseFloat(document.getElementById('expenseAmount').value);
+      const paidBy = document.getElementById('paidBy').value;
+      
+      if (desc === '') {
+        alert('Please enter a description');
+        return;
+      }
+      
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      if (paidBy === '') {
+        alert('Please select who paid');
+        return;
+      }
+      
+      expenses.push({ desc, amount, paidBy });
+      
+      document.getElementById('expenseDesc').value = '';
+      document.getElementById('expenseAmount').value = '';
+      document.getElementById('paidBy').value = '';
+      
+      updateExpensesList();
+      calculateSettlement();
+    }
+
+    function updateExpensesList() {
+      const list = document.getElementById('expensesList');
+      const totalSection = document.getElementById('totalSection');
+      const totalAmount = document.getElementById('totalAmount');
+      
+      if (expenses.length === 0) {
+        list.innerHTML = '<div class="empty-state">No expenses added yet</div>';
+        totalSection.style.display = 'none';
+        return;
+      }
+      
+      const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      
+      list.innerHTML = expenses.map(exp => `
+        <div class="expense-item">
+          <div class="expense-details">
+            <h4>${exp.desc}</h4>
+            <p>Paid by ${exp.paidBy}</p>
+          </div>
+          <div class="expense-amount">₹${exp.amount.toFixed(2)}</div>
+        </div>
+      `).join('');
+      
+      totalSection.style.display = 'block';
+      totalAmount.textContent = `₹${total.toFixed(2)}`;
+    }
+
+    function calculateSettlement() {
+      const list = document.getElementById('settlementList');
+      
+      if (people.length === 0 || expenses.length === 0) {
+        list.innerHTML = '<div class="empty-state">Add people and expenses to see settlement</div>';
+        return;
+      }
+      
+      const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+      const perPerson = total / people.length;
+      
+      const balances = {};
+      people.forEach(person => {
+        balances[person] = -perPerson;
+      });
+      
+      expenses.forEach(exp => {
+        balances[exp.paidBy] += exp.amount;
+      });
+      
+      const debtors = [];
+      const creditors = [];
+      
+      for (let person in balances) {
+        if (balances[person] < -0.01) {
+          debtors.push({ name: person, amount: -balances[person] });
+        } else if (balances[person] > 0.01) {
+          creditors.push({ name: person, amount: balances[person] });
+        }
+      }
+      
+      const settlements = [];
+      let i = 0, j = 0;
+      
+      while (i < debtors.length && j < creditors.length) {
+        const debt = debtors[i].amount;
+        const credit = creditors[j].amount;
+        const payment = Math.min(debt, credit);
+        
+        settlements.push({
+          from: debtors[i].name,
+          to: creditors[j].name,
+          amount: payment
+        });
+        
+        debtors[i].amount -= payment;
+        creditors[j].amount -= payment;
+        
+        if (debtors[i].amount < 0.01) i++;
+        if (creditors[j].amount < 0.01) j++;
+      }
+      
+      if (settlements.length === 0) {
+        list.innerHTML = '<div class="settlement-item"><p>All settled up! 🎉</p></div>';
+        return;
+      }
+      
+      list.innerHTML = settlements.map(s => `
+        <div class="settlement-item">
+          <p><strong>${s.from}</strong> owes <strong>${s.to}</strong></p>
+          <div class="settlement-amount">₹${s.amount.toFixed(2)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Initialize
+    updatePeopleList();
+    updateExpensesList();
+    calculateSettlement();
+  </script>
+</body>
+</html>
